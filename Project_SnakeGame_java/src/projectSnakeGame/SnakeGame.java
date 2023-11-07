@@ -34,7 +34,13 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
 
     boolean gameOver = false;
     
-    JButton resetButton;
+    JButton resetButton;//Green button at the end of the game
+    JButton exitGame;//Red button at the end of the game
+    JButton playGame;//Button that start game
+    JLabel titleLabel;//Title the game
+    
+    boolean gameStarted = false;//Variável que controla o estado inicial do jogo e a transição para o jogo em si.
+    boolean gameRunning = false;//Variável que controla se o jogo está em execução ou pausado
 
     SnakeGame(int boardWidth, int boardHeight) {
         this.boardWidth = boardWidth;
@@ -60,6 +66,9 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
     
     public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		if (!gameStarted) {
+			return;
+		}
 		draw(g);
 	}
 
@@ -92,6 +101,7 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
             g.setColor(Color.red);
             g.drawString("Game Over: " + foodValue, tileSize - 16, tileSize);
             buttonResetGame(g);
+            buttonExitGame(g);
         }
         else {
             g.drawString("Score: " + foodValue, tileSize - 16, tileSize);
@@ -141,13 +151,22 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
             //colisão com a cabeça da cobra
             if (collision(snakeHead, snakePart)) {
                 gameOver = true;
+                resetVelocity();
             }
         }
 
         if (snakeHead.x*tileSize < 0 || snakeHead.x*tileSize > boardWidth || //cabeça passou o limite do lado direito ou esquerdo da tela
             snakeHead.y*tileSize < 0 || snakeHead.y*tileSize > boardHeight ) { //cabeça passou do limite do lado de cima ou em baixo da tela
             gameOver = true;
+            resetVelocity();
         }
+    }
+    
+    //reset velocity if gameOver = true
+    public void resetVelocity() {
+    	gameLoop.stop();
+    	gameLoop = new Timer(100, this);
+    	gameLoop.start();
     }
     
     public void buttonResetGame(Graphics g) {
@@ -175,21 +194,98 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
     	placeFood();
     	
     	resetButton.setVisible(false);
+    	exitGame.setVisible(false);
     	gameLoop.start();
     	repaint();
+    }
+    
+    public void buttonExitGame(Graphics g) {
+    	exitGame = new JButton("Exit Game");
+    	exitGame.setBounds(280, 6, 120, 25);
+    	exitGame.setFont(new Font("Poppins", Font.BOLD, 16));
+    	exitGame.setForeground(Color.white);
+    	exitGame.setBackground(Color.red);
+    	exitGame.addActionListener(new ActionListener() {
+    		public void actionPerformed(ActionEvent e) {
+    			restartGame(g);
+    		}
+    	});
+    	setLayout(null);
+    	add(exitGame);
+    }
+    
+    public void restartGame(Graphics g) {
+    	gameStarted = false;
+    	gameRunning = false;
+    	resetButton.setVisible(false);
+    	exitGame.setVisible(false);
+    	repaint();
+		createStartScreen(g);
     }
 
     public boolean collision(Tile tile1, Tile tile2) {
         return tile1.x == tile2.x && tile1.y == tile2.y;
     }
+    
+    public void createStartScreen(Graphics g) {
+    	playGame = new JButton("Play Game");
+    	playGame.setBounds(boardWidth / 2 - 100, boardHeight / 2, 210, 50);
+    	playGame.setFont(new Font("Poppins", Font.BOLD, 28));
+    	playGame.setForeground(Color.black);
+    	playGame.setBackground(Color.green);
+    	
+    	playGame.addActionListener(new ActionListener() {
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			startGame();
+    		}
+    	});
+    	
+    	setLayout(null);
+    	add(playGame);
+    	
+    	titleLabel = new JLabel("Snake Game");
+    	titleLabel.setBounds(boardWidth / 2 - 135, boardHeight / 2 - 100, 350, 50);
+    	titleLabel.setFont(new Font("Arial", Font.BOLD, 48));
+    	titleLabel.setForeground(Color.green);
+    	
+    	setLayout(null);
+    	add(titleLabel);
+    	
+    }
+    
+    public void startGame() {
+    	snakeHead = new Tile(10, 10);
+        snakeBody.clear();
+        foodValue = 0;
+        velocityX = 1;
+        velocityY = 0;
+        gameOver = false;
+        placeFood();
+    	
+    	gameStarted = true;
+    	gameRunning = true;
+    	removeStartScreen();
+    	gameLoop.start();
+    	repaint();
+    }
+    
+    public void removeStartScreen() {
+    	playGame.setVisible(false);
+    	titleLabel.setVisible(false);
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) { 
-        move();
-        repaint();
-        if (gameOver) {
-            gameLoop.stop();
-        }
+    	if (!gameStarted) {
+    		return;
+    	}
+    	move();
+    	repaint();
+    	if (gameOver) {
+    		gameLoop.stop();
+    		gameRunning = false;
+    	}
     }  
 
     @Override
