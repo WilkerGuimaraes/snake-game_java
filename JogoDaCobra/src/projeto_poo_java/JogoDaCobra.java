@@ -36,8 +36,8 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 	int valorComida = 0;
 	
 	//logica do jogo
-	int velocidadeX;
-	int velocidadeY;
+	int direcaoX;
+	int direcaoY;
 	Timer loopJogo;
 	
 	boolean fimDeJogo = false;//Variável qeu controla se o jogo está em andamento ou se o jogo terminou (o jogador perdeu).
@@ -66,8 +66,8 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 		random = new Random();
 		posicaoComida();
 		
-		velocidadeX = 1;
-		velocidadeY = 0;
+		direcaoX = 1;
+		direcaoY = 0;
 		
 		//Tempo do jogo
 		loopJogo = new Timer(100, this);//Tempo em milissegundos que a cabeça da cobra muda de quadro.
@@ -152,8 +152,8 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 		}
 		
 		//Movimentação da cabeça da cobra.
-		cabecaCobra.x += velocidadeX;
-		cabecaCobra.y += velocidadeY;
+		cabecaCobra.x += direcaoX;
+		cabecaCobra.y += direcaoY;
 		
 		//Condições de fim de jogo.
 		for (int i = 0; i < corpoCobra.size(); i++) {
@@ -205,8 +205,8 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 		cabecaCobra = new Bloco(10, 10);
 		corpoCobra.clear();
 		valorComida = 0;
-		velocidadeX = 1;
-		velocidadeY = 0;
+		direcaoX = 1;
+		direcaoY = 0;
 		fimDeJogo = false;
 		posicaoComida();
 		
@@ -269,8 +269,8 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 		cabecaCobra = new Bloco(10, 10);
 		corpoCobra.clear();
 		valorComida = 0;
-		velocidadeX = 1;
-		velocidadeY = 0;
+		direcaoX = 1;
+		direcaoY = 0;
 		fimDeJogo = false;
 		posicaoComida();
 		
@@ -370,21 +370,21 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_UP && velocidadeY != 1) {
-            velocidadeX = 0;
-            velocidadeY = -1;
+		if (e.getKeyCode() == KeyEvent.VK_UP && direcaoY != 1) {
+            direcaoX = 0;
+            direcaoY = -1;
         }
-        else if (e.getKeyCode() == KeyEvent.VK_DOWN && velocidadeY != -1) {
-            velocidadeX = 0;
-            velocidadeY = 1;
+        else if (e.getKeyCode() == KeyEvent.VK_DOWN && direcaoY != -1) {
+            direcaoX = 0;
+            direcaoY = 1;
         }
-        else if (e.getKeyCode() == KeyEvent.VK_LEFT && velocidadeX != 1) {
-            velocidadeX = -1;
-            velocidadeY = 0;
+        else if (e.getKeyCode() == KeyEvent.VK_LEFT && direcaoX != 1) {
+            direcaoX = -1;
+            direcaoY = 0;
         }
-        else if (e.getKeyCode() == KeyEvent.VK_RIGHT && velocidadeX != -1) {
-            velocidadeX = 1;
-            velocidadeY = 0;
+        else if (e.getKeyCode() == KeyEvent.VK_RIGHT && direcaoX != -1) {
+            direcaoX = 1;
+            direcaoY = 0;
         }
 	}
 	
