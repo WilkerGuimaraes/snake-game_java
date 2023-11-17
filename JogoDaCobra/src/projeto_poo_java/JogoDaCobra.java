@@ -35,7 +35,7 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 	Random random;
 	int valorComida = 0;
 	
-	//logica do jogo
+	//lógica do jogo
 	int direcaoX;
 	int direcaoY;
 	Timer loopJogo;
@@ -85,8 +85,8 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 	public void desenhar(Graphics g) {
 		//Desenho das linhas do tabuleiro.
 		for (int i = 0; i < larguraTela / tamanhoBloco; i++) {
-			g.drawLine(i*tamanhoBloco, 0, i*tamanhoBloco, alturaTela);
-			g.drawLine(0, i*tamanhoBloco, larguraTela, i*tamanhoBloco);
+			g.drawLine(i*tamanhoBloco, 0, i*tamanhoBloco, alturaTela);//Desenho da linha vertical.
+			g.drawLine(0, i*tamanhoBloco, larguraTela, i*tamanhoBloco);//Desenho da linha horizontal.
 		}
 		
 		//Comida.
@@ -225,14 +225,14 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 		botaoSair.setBackground(Color.red);
 		botaoSair.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				resetarJogo(g);
+				sairJogo(g);
 			}
 		});
 		setLayout(null);
 		add(botaoSair);
 	}
 	
-	public void resetarJogo(Graphics g) {
+	public void sairJogo(Graphics g) {
 		inicioDoJogo = false;
 		jogoRodando = false;
 		botaoReset.setVisible(false);
@@ -302,7 +302,7 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 			String caminhoDaPasta = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "Jogo da Cobrinha - Histórico de Placares";
 			File pasta = new File(caminhoDaPasta);
 			
-			System.out.println("Folder path: " + caminhoDaPasta);
+			System.out.println("Diretório: " + caminhoDaPasta);
 			
 			File[] arquivos = pasta.listFiles();
 			
@@ -339,12 +339,12 @@ public class JogoDaCobra extends JPanel implements ActionListener, KeyListener {
 				pasta.mkdirs();
 			}
 			
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss_SSS");
-			String dataHoraAtual = dateFormat.format(new Date());
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss_SSS");//Objeto que formata a data e hora e o atribui a variável `dateFormat`.
+			String dataHoraAtual = dateFormat.format(new Date());//Obtém a data e hora atual formatada.
 			
-			String arquivoDaPasta = caminhoDaPasta + "/Pontuação_" + dataHoraAtual + ".txt";
+			String arquivoDaPasta = caminhoDaPasta + "/Pontuação_" + dataHoraAtual + ".txt";//Nomeia o arquivo com o nome formatado.
 			
-			try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivoDaPasta))) {
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivoDaPasta))) {//Cria um objeto para escrever o nome do arquivo.
 				writer.write("Pontuação: " + placar + " pontos.");
 				writer.newLine();
 			}
