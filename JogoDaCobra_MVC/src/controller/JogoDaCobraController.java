@@ -109,7 +109,11 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 			if (valorComida >= 100) {
 				loopJogo.stop();
 				int novoLoopJogo = loopJogo.getDelay() - 2;
-				loopJogo = new Timer(novoLoopJogo, (ActionListener) this);
+				loopJogo = new Timer(novoLoopJogo, new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						view.actionPerformed(e);
+					}
+				});
 				loopJogo.start();
 			}
 			posicaoComida();
@@ -154,13 +158,17 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 	}
 	
 	public boolean colisao(Bloco bloco1, Bloco bloco2) {
-		return bloco1.x == bloco2.x && bloco1.x == bloco2.x;
+		return bloco1.x == bloco2.x && bloco1.y == bloco2.y;
 	}
 	
 	//Método criado para cancelar a aceleração da cobra e retornar a sua velocidade normal caso o jogo reinicie.
 	public void resetarVelocidade() {
 		loopJogo.stop();
-		loopJogo = new Timer(100, (ActionListener) this);
+		loopJogo = new Timer(100, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				view.actionPerformed(e);
+			}
+		});
 		loopJogo.start();
 	}
 
