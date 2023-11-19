@@ -1,39 +1,28 @@
 package view;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 import controller.JogoDaCobraController;
-import model.JogoDaCobraModel;
-import utils.JogoDaCobraUtils;
-import utils.JogoDaCobraUtils.Bloco;
+import model.Bloco;
 
-public class JogoDaCobraView extends JPanel {
+public class JogoDaCobraView extends JPanel implements ActionListener, KeyListener {
 	private JogoDaCobraController controller;
-	private JogoDaCobraModel model;
+
+	private JButton botaoJogar;//Botão na tela inicial que inicia o jogo.
+	private JButton botaoReset;//Botão verde que reinicia o jogo. 
+	private JButton botaoSair;//Botão vermelho que encerra o jogo e retorna a tela inicial.
+	private JButton botaoExibirPlacares;//Botão que mostra o histórico de arquivos (.txt) com o resultado final do jogo.
 	
+	private JLabel tituloDoJogo;//Título do jogo.
 	
-	private  JButton botaoJogar;//Botão na tela inicial que inicia o jogo.
-	private  JButton botaoReset;//Botão verde que reinicia o jogo. 
-	private  JButton botaoSair;//Botão vermelho que encerra o jogo e retorna a tela inicial.
-	private  JButton botaoExibirPlacares;//Botão que mostra o histórico de arquivos (.txt) com o resultado final do jogo.
-	
-	private  JLabel tituloDoJogo;//Título do jogo.
-	
-	public JogoDaCobraView(int larguraTela, int alturaTela) {
-		this.larguraTela = larguraTela;
-		this.alturaTela = alturaTela;
-		setPreferredSize(new Dimension(this.larguraTela, this.alturaTela));
+	public JogoDaCobraView(JogoDaCobraController controller) {
+		this.controller = controller;
+		
+		setPreferredSize(new Dimension(controller.getLarguraTela(), controller.getAlturaTela()));
 		setBackground(Color.black);
-		addKeyListener(this);
+		addKeyListener(controller);
 		setFocusable(true);
 	}
 	
@@ -47,36 +36,36 @@ public class JogoDaCobraView extends JPanel {
 	
 	public void desenhar(Graphics g) {
 		//Desenho das linhas do tabuleiro.
-		for (int i = 0; i < larguraTela / model.getTamanhoBloco(); i++) {
-			g.drawLine(i*model.getTamanhoBloco(), 0, i*model.getTamanhoBloco(), alturaTela);//Desenho da linha vertical.
-			g.drawLine(0, i*model.getTamanhoBloco(), larguraTela, i*model.getTamanhoBloco());//Desenho da linha horizontal.
+		for (int i = 0; i < controller.getLarguraTela() / controller.getTamanhoBloco(); i++) {
+			g.drawLine(i*controller.getTamanhoBloco(), 0, i*controller.getTamanhoBloco(), controller.getLarguraTela());//Desenho da linha vertical.
+			g.drawLine(0, i*controller.getTamanhoBloco(), controller.getLarguraTela(), i*controller.getTamanhoBloco());//Desenho da linha horizontal.
 		}
 		
 		//Comida.
 		g.setColor(Color.red);
-		g.fill3DRect(comida.x*model.getTamanhoBloco(), comida.y*model.getTamanhoBloco(), model.getTamanhoBloco(), model.getTamanhoBloco(), true);
+		g.fill3DRect(controller.getComida().x*controller.getTamanhoBloco(), controller.getComida().y*controller.getTamanhoBloco(), controller.getTamanhoBloco(), controller.getTamanhoBloco(), true);
 		
 		//Cabeça da cobra.
 		g.setColor(Color.green);
-		g.fill3DRect(model.getCabecaCobra().x*model.getTamanhoBloco(), model.getCabecaCobra().y*model.getTamanhoBloco(), model.getTamanhoBloco(), model.getTamanhoBloco(), true);
+		g.fill3DRect(controller.getCabecaCobra().x*controller.getTamanhoBloco(), controller.getCabecaCobra().y*controller.getTamanhoBloco(), controller.getTamanhoBloco(), controller.getTamanhoBloco(), true);
 		
 		//Corpo da cobra.
 		g.setColor(new Color(46, 125, 50));
-		for (int i = 0; i < model.getCorpoCobra().size(); i++) {
-			Bloco parteCobra = model.getCorpoCobra().get(i);
-			g.fill3DRect(parteCobra.x*model.getTamanhoBloco(), parteCobra.y*model.getTamanhoBloco(), model.getTamanhoBloco(), model.getTamanhoBloco(), true);
+		for (int i = 0; i < controller.getCorpoCobra().size(); i++) {
+			Bloco parteCobra = controller.getCorpoCobra().get(i);
+			g.fill3DRect(parteCobra.x*controller.getTamanhoBloco(), parteCobra.y*controller.getTamanhoBloco(), controller.getTamanhoBloco(), controller.getTamanhoBloco(), true);
 		}
 		
 		//Placar.
 		g.setFont(new Font("Poppins", Font.PLAIN, 16));
 		if (controller.isFimDeJogo()) {
 			g.setColor(Color.red);
-			g.drawString("Fim de Jogo: " + valorComida + " pontos.", model.getTamanhoBloco() - 16, model.getTamanhoBloco());
+			g.drawString("Fim de Jogo: " + controller.getValorComida() + " pontos.", controller.getTamanhoBloco() - 16, controller.getTamanhoBloco());
 			botaoResetarJogo(g);
 			botaoSairDoJogo(g);
 			botaoExibirHistoricoPlacares(g);
 		} else {
-			g.drawString("Placar: " + valorComida, model.getTamanhoBloco() - 16, model.getTamanhoBloco());
+			g.drawString("Placar: " + controller.getValorComida(), controller.getTamanhoBloco() - 16, controller.getTamanhoBloco());
 		}
 	}
 	
@@ -88,7 +77,11 @@ public class JogoDaCobraView extends JPanel {
 		botaoReset.setBackground(Color.green);
 		botaoReset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				model.resetarJogo();
+				controller.resetarJogo();
+				botaoReset.setVisible(false);
+				botaoSair.setVisible(false);
+				botaoExibirPlacares.setVisible(false);
+				repaint();
 			}
 		});
 		setLayout(null);
@@ -103,7 +96,12 @@ public class JogoDaCobraView extends JPanel {
 		botaoSair.setBackground(Color.red);
 		botaoSair.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				model.sairJogo(g);
+				controller.sairJogo(g);
+				botaoReset.setVisible(false);
+				botaoSair.setVisible(false);
+				botaoExibirPlacares.setVisible(false);
+				repaint();
+				telaInicial(g);
 			}
 		});
 		setLayout(null);
@@ -112,13 +110,16 @@ public class JogoDaCobraView extends JPanel {
 	
 	public void telaInicial(Graphics g) {
 		botaoJogar = new JButton("Jogar");
-		botaoJogar.setBounds(larguraTela / 2 - 100, alturaTela / 2, 210, 50);
+		botaoJogar.setBounds(controller.getAlturaTela() / 2 + 135, controller.getAlturaTela() / 2, 210, 50);
 		botaoJogar.setFont(new Font("Poppins", Font.BOLD, 28));
 		botaoJogar.setForeground(Color.black);
 		botaoJogar.setBackground(Color.green);
 		botaoJogar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				model.iniciarJogo();
+				controller.iniciarJogo();
+				botaoJogar.setVisible(false);
+				tituloDoJogo.setVisible(false);
+				repaint();
 			}
 		});
 		setLayout(null);
@@ -126,7 +127,7 @@ public class JogoDaCobraView extends JPanel {
 		
 		//Título na tela inicial.
 		tituloDoJogo = new JLabel("Jogo da Cobrinha");
-		tituloDoJogo.setBounds(larguraTela / 3, alturaTela / 2 - 100, 500, 55);
+		tituloDoJogo.setBounds(controller.getLarguraTela() / 3, controller.getAlturaTela() / 2 - 100, 500, 55);
 		tituloDoJogo.setFont(new Font("Arial", Font.BOLD, 48));
 		tituloDoJogo.setForeground(Color.green);
 		setLayout(null);
@@ -146,6 +147,16 @@ public class JogoDaCobraView extends JPanel {
 		});
 		setLayout(null);
 		add(botaoExibirPlacares);
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		controller.realizarAcaoDoJogo();
+		repaint();
+		
+		if (e.getSource() == getBotaoExibirPlacares()) {
+			botaoExibirHistoricoPlacares(null);
+		}
 	}
 	
 	public JButton getBotaoJogar() {
@@ -186,5 +197,23 @@ public class JogoDaCobraView extends JPanel {
 
 	public void setTituloDoJogo(JLabel tituloDoJogo) {
 		this.tituloDoJogo = tituloDoJogo;
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

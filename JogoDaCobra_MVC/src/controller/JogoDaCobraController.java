@@ -1,182 +1,170 @@
 package controller;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.Timer;
+import javax.swing.*;
 
-import utils.JogoDaCobraUtils;
-import utils.JogoDaCobraUtils.Bloco;
-import model.JogoDaCobraModel;
+import model.Bloco;
+import model.CabecaCobra;
+import model.Comida;
 import view.JogoDaCobraView;
 
-public class JogoDaCobraController implements ActionListener, KeyListener {
-	private JogoDaCobraUtils utils;
-	private JogoDaCobraModel model;
+public class JogoDaCobraController implements ActionListener, KeyListener, JogoDaCobraControllerBusiness {
 	private JogoDaCobraView view;
+	
+	private int larguraTela;
+	private int alturaTela;
+	private int tamanhoBloco = 30;
 	
 	//lógica do jogo.
 	private int direcaoX;
 	private int direcaoY;
 	private Timer loopJogo;
 	
-	private boolean fimDeJogo = false;//Variável qeu controla se o jogo está em andamento ou se o jogo terminou (o jogador perdeu).
-	private boolean inicioDoJogo = false;//Variável que controla o estado inicial do jogo e a transição para o jogo em si.
-	private boolean jogoRodando = false;//Variável que controla se o jogo está em execução ou pausado. 
+	//cobra
+	private CabecaCobra cabecaCobra;
+	private ArrayList<Bloco> corpoCobra;
 	
 	//comida
-	private Bloco comida;
+	private Comida comida;
 	Random random;
-	private int valorComida = 0;
+	private int valorComida;
 	
-	public boolean isFimDeJogo() {
-		return fimDeJogo;
-	}
-
-	public void setFimDeJogo(boolean fimDeJogo) {
-		this.fimDeJogo = fimDeJogo;
-	}
-
-	public boolean isInicioDoJogo() {
-		return inicioDoJogo;
-	}
-
-	public void setInicioDoJogo(boolean inicioDoJogo) {
-		this.inicioDoJogo = inicioDoJogo;
-	}
-
-	public boolean isJogoRodando() {
-		return jogoRodando;
-	}
-
-	public void setJogoRodando(boolean jogoRodando) {
-		this.jogoRodando = jogoRodando;
-	}
-
-	public int getDirecaoX() {
-		return direcaoX;
-	}
-
-	public void setDirecaoX(int direcaoX) {
-		this.direcaoX = direcaoX;
-	}
-
-	public int getDirecaoY() {
-		return direcaoY;
-	}
-
-	public void setDirecaoY(int direcaoY) {
-		this.direcaoY = direcaoY;
-	}
-
-	public Bloco getComida() {
-		return comida;
-	}
-
-	public void setComida(Bloco comida) {
-		this.comida = comida;
+	private boolean fimDeJogo = false;//Variável qeu controla se o jogo está em andamento ou se o jogo terminou (o jogador perdeu).
+	private boolean inicioDoJogo = false;//Variável que controla o estado inicial do jogo e a transição para o jogo em si.
+	private boolean jogoRodando = false;//Variável que controla se o jogo está em execução ou pausado.
+	
+	public void setView(JogoDaCobraView view) {
+		this.view = view;
 	}
 	
-	public Timer getLoopJogo() {
-		return loopJogo;
-	}
-
-	public void setLoopJogo(Timer loopJogo) {
-		this.loopJogo = loopJogo;
-	}
-	
-	public JogoDaCobraController() {
-		Bloco comida = new Bloco(10, 10);
+	public JogoDaCobraController(int larguraTela, int alturaTela) {
+		this.larguraTela = larguraTela;
+		this.alturaTela = alturaTela;
+		
+		cabecaCobra = new CabecaCobra(10, 10);
+		corpoCobra = new ArrayList<Bloco>();
+		
+		comida = new Comida(10, 10);
 		random = new Random();
 		posicaoComida();
 		
 		direcaoX = 1;
 		direcaoY = 0;
 		
-		loopJogo = new Timer(100, this);
+		loopJogo = new Timer(100, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				view.actionPerformed(e);
+			}
+		});
 		loopJogo.start();
 	}
 
 	public void posicaoComida() {
-		comida.x = random.nextInt(larguraTela / model.getTamanhoBloco());
-		comida.y = random.nextInt(alturaTela / model.getTamanhoBloco());
+		comida.x = random.nextInt(larguraTela / tamanhoBloco);
+		comida.y = random.nextInt(alturaTela / tamanhoBloco);
+	}
+	
+	public void resetarJogo() {
+		cabecaCobra = new CabecaCobra(10, 10);
+		corpoCobra.clear();
+		valorComida = 0;
+		direcaoX = 1;
+		direcaoY = 0;
+		fimDeJogo = false;
+		posicaoComida();
+		loopJogo.start();
+	}
+
+	public void sairJogo(Graphics g) {
+		inicioDoJogo = false;
+		jogoRodando = false;
+	}
+	
+	public void iniciarJogo() {
+		cabecaCobra = new CabecaCobra(10, 10);
+		corpoCobra.clear();
+		valorComida = 0;
+		direcaoX = 1;
+		direcaoY = 0;
+		fimDeJogo = false;
+		posicaoComida();
+		inicioDoJogo = true;
+		jogoRodando = true;
+		loopJogo.start();
 	}
 	
 	public void mover() {
 		//Comer a comida.
-		if (colisao(model.getCabecaCobra(), comida)) {
-			model.getCorpoCobra().add(new Bloco(comida.x, comida.y));
+		if (colisao(cabecaCobra, comida)) {
+			corpoCobra.add(new Bloco(comida.x, comida.y));
 			valorComida += 10;
 			//Lógica para aumentar a velocidade de percurso da cobra.
 			if (valorComida >= 100) {
 				loopJogo.stop();
 				int novoLoopJogo = loopJogo.getDelay() - 2;
-				loopJogo = new Timer(novoLoopJogo, this);
+				loopJogo = new Timer(novoLoopJogo, (ActionListener) this);
 				loopJogo.start();
 			}
 			posicaoComida();
 		}
 		
 		//Movimentação do corpo da cobra.
-		for (int i = model.getCorpoCobra().size() - 1; i >= 0; i--) {
-			JogoDaCobraUtils.Bloco parteCobra = model.getCorpoCobra().get(i);
+		for (int i = corpoCobra.size() - 1; i >= 0; i--) {
+			Bloco parteCobra = corpoCobra.get(i);
 			//Cada parte do corpo é movida para a posição da parte anterior.
 			if (i == 0) {//antes da cabeça
-				parteCobra.x = model.getCabecaCobra().x;
-				parteCobra.y = model.getCabecaCobra().y;
+				parteCobra.x = cabecaCobra.x;
+				parteCobra.y = cabecaCobra.y;
 			} else {
-				JogoDaCobraUtils.Bloco anteriorParteCobra = model.getCorpoCobra().get(i - 1);
+				Bloco anteriorParteCobra = corpoCobra.get(i - 1);
 				parteCobra.x = anteriorParteCobra.x;
 				parteCobra.y = anteriorParteCobra.y;
 			}
 		}
 		
 		//Movimentação da cabeça da cobra.
-		model.getCabecaCobra().x += direcaoX;
-		model.getCabecaCobra().y += direcaoY;
+		cabecaCobra.x += direcaoX;
+		cabecaCobra.y += direcaoY;
 		
 		//Condições de fim de jogo.
-		for (int i = 0; i < model.getCorpoCobra().size(); i++) {
-			JogoDaCobraUtils.Bloco parteCobra = model.getCorpoCobra().get(i);
+		for (int i = 0; i < corpoCobra.size(); i++) {
+			Bloco parteCobra = corpoCobra.get(i);
 			
 			//Colisão => cabeça + corpo
-			if (colisao(model.getCabecaCobra(), parteCobra)) {
+			if (colisao(cabecaCobra, parteCobra)) {
 				fimDeJogo = true;
 				resetarVelocidade();
 				salvarPlacar(valorComida);
 			}
 		}
 		
-		if (model.getCabecaCobra().x*model.getTamanhoBloco() < 0 || model.getCabecaCobra().x*model.getTamanhoBloco() >= larguraTela || //Cabeça passou da borda da esquerda ou direita
-			model.getCabecaCobra().y*model.getTamanhoBloco() < 0 || model.getCabecaCobra().y*model.getTamanhoBloco() >= alturaTela ) { // Cabeça passou da borda de cima ou embaixo
+		if (cabecaCobra.x*tamanhoBloco < 0 || cabecaCobra.x*tamanhoBloco >= larguraTela || //Cabeça passou da borda da esquerda ou direita
+			cabecaCobra.y*tamanhoBloco < 0 || cabecaCobra.y*tamanhoBloco >= alturaTela ) { // Cabeça passou da borda de cima ou embaixo
 			fimDeJogo = true;
 			resetarVelocidade();
 			salvarPlacar(valorComida);
 		}
 	}
 	
-	public boolean colisao(JogoDaCobraUtils.Bloco bloco1, JogoDaCobraUtils.Bloco bloco2) {
-		return bloco1.x == bloco2.x && bloco1.y == bloco2.y;
+	public boolean colisao(Bloco bloco1, Bloco bloco2) {
+		return bloco1.x == bloco2.x && bloco1.x == bloco2.x;
 	}
 	
 	//Método criado para cancelar a aceleração da cobra e retornar a sua velocidade normal caso o jogo reinicie.
 	public void resetarVelocidade() {
 		loopJogo.stop();
-		loopJogo = new Timer(100, this);
+		loopJogo = new Timer(100, (ActionListener) this);
 		loopJogo.start();
 	}
-	
+
+	@Override
 	public void exibirPlacar() {
 		try {
 			String caminhoDaPasta = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "Jogo da Cobrinha - Histórico de Placares";
@@ -187,7 +175,7 @@ public class JogoDaCobraController implements ActionListener, KeyListener {
 			File[] arquivos = pasta.listFiles();
 			
 			if (arquivos == null || arquivos.length == 0) {
-				JOptionPane.showMessageDialog(this, "Nenhum arquivo encontrado nesta pasta: " + caminhoDaPasta);
+				JOptionPane.showMessageDialog(null, "Nenhum arquivo encontrado nesta pasta: " + caminhoDaPasta);
 				return;
 			}
 			
@@ -200,12 +188,13 @@ public class JogoDaCobraController implements ActionListener, KeyListener {
 			
 			JScrollPane scrollPane = new JScrollPane(arquivosList);
 			
-			JOptionPane.showMessageDialog(this, scrollPane, "Histórico de Placares", JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null, scrollPane, "Histórico de Placares", JOptionPane.PLAIN_MESSAGE);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	@Override
 	public void salvarPlacar(int placar) {
 		try {
 			String caminhoDaPasta = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "Jogo da Cobrinha - Histórico de Placares";
@@ -230,22 +219,6 @@ public class JogoDaCobraController implements ActionListener, KeyListener {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (!inicioDoJogo) {
-			return;
-		}
-		mover();
-		view.repaint();
-		if (fimDeJogo) {
-			loopJogo.stop();
-			jogoRodando = false;
-		}
-		if (e.getSource() == view.getBotaoExibirPlacares()) {
-			view.botaoExibirHistoricoPlacares(null);
 		}
 	}
 
@@ -280,5 +253,112 @@ public class JogoDaCobraController implements ActionListener, KeyListener {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public int getLarguraTela() {
+		return larguraTela;
+	}
+
+	public void setLarguraTela(int larguraTela) {
+		this.larguraTela = larguraTela;
+	}
+
+	public int getAlturaTela() {
+		return alturaTela;
+	}
+
+	public void setAlturaTela(int alturaTela) {
+		this.alturaTela = alturaTela;
+	}
+
+	public CabecaCobra getCabecaCobra() {
+		return cabecaCobra;
+	}
+
+	public void setCabecaCobra(CabecaCobra cabecaCobra) {
+		this.cabecaCobra = cabecaCobra;
+	}
+
+	public ArrayList<Bloco> getCorpoCobra() {
+		return corpoCobra;
+	}
+
+	public void setCorpoCobra(ArrayList<Bloco> corpoCobra) {
+		this.corpoCobra = corpoCobra;
+	}
+
+	public Comida getComida() {
+		return comida;
+	}
+
+	public void setComida(Comida comida) {
+		this.comida = comida;
+	}
+
+	public boolean isFimDeJogo() {
+		return fimDeJogo;
+	}
+
+	public boolean isInicioDoJogo() {
+		return inicioDoJogo;
+	}
+
+	public void setInicioDoJogo(boolean inicioDoJogo) {
+		this.inicioDoJogo = inicioDoJogo;
+	}
+
+	public void setFimDeJogo(boolean fimDeJogo) {
+		this.fimDeJogo = fimDeJogo;
+	}
+
+	public int getTamanhoBloco() {
+		return tamanhoBloco;
+	}
+
+	public void setTamanhoBloco(int tamanhoBloco) {
+		this.tamanhoBloco = tamanhoBloco;
+	}
+
+	public int getValorComida() {
+		return valorComida;
+	}
+
+	public void setValorComida(int valorComida) {
+		this.valorComida = valorComida;
+	}
+	
+	public boolean isJogoRodando() {
+		return jogoRodando;
+	}
+
+	public void setJogoRodando(boolean jogoRodando) {
+		this.jogoRodando = jogoRodando;
+	}
+
+	public Timer getLoopJogo() {
+		return loopJogo;
+	}
+
+	public void setLoopJogo(Timer loopJogo) {
+		this.loopJogo = loopJogo;
+	}
+	
+	public void realizarAcaoDoJogo() {
+		if (inicioDoJogo) {
+			mover();
+			
+			if (fimDeJogo) {
+				loopJogo.stop();
+				jogoRodando = false;
+			}
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 	
 }
