@@ -11,9 +11,11 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 	private JogoDaCobraController controller;
 
 	private JButton botaoJogar;//Botão na tela inicial que inicia o jogo.
+	private JButton botaoFechar;//Botão na tela inicial responsável por fechar a aplicação.
 	private JButton botaoReset;//Botão verde que reinicia o jogo. 
 	private JButton botaoSair;//Botão vermelho que encerra o jogo e retorna a tela inicial.
 	private JButton botaoExibirPlacares;//Botão que mostra o histórico de arquivos (.txt) com o resultado final do jogo.
+	private JButton botaoAbrirDiretorio;
 	
 	private JLabel tituloDoJogo;//Título do jogo.
 	
@@ -64,9 +66,50 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 			botaoResetarJogo(g);
 			botaoSairDoJogo(g);
 			botaoExibirHistoricoPlacares(g);
+			botaoAbrirDiretorio(g);
 		} else {
 			g.drawString("Placar: " + controller.getValorComida(), controller.getTamanhoBloco() - 16, controller.getTamanhoBloco());
 		}
+	}
+	
+	public void telaInicial(Graphics g) {
+		botaoJogar = new JButton("Jogar");
+		botaoJogar.setBounds(controller.getAlturaTela() / 2 + 135, controller.getAlturaTela() / 2 - 30, 210, 50);
+		botaoJogar.setFont(new Font("Poppins", Font.BOLD, 28));
+		botaoJogar.setForeground(Color.black);
+		botaoJogar.setBackground(Color.green);
+		botaoJogar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				controller.iniciarJogo();
+				botaoJogar.setVisible(false);
+				tituloDoJogo.setVisible(false);
+				botaoFechar.setVisible(false);
+				repaint();
+			}
+		});
+		setLayout(null);
+		add(botaoJogar);
+		
+		//Título na tela inicial.
+		tituloDoJogo = new JLabel("Jogo da Cobrinha");
+		tituloDoJogo.setBounds(controller.getLarguraTela() / 3, controller.getAlturaTela() / 2 - 150, 500, 55);
+		tituloDoJogo.setFont(new Font("Arial", Font.BOLD, 48));
+		tituloDoJogo.setForeground(Color.green);
+		setLayout(null);
+		add(tituloDoJogo);
+		
+		botaoFechar = new JButton("Sair do jogo");
+		botaoFechar.setBounds(controller.getAlturaTela() / 2 + 135, controller.getAlturaTela() / 2 + 50, 210, 50);
+		botaoFechar.setFont(new Font("Poppins", Font.BOLD, 28));
+		botaoFechar.setForeground(Color.white);
+		botaoFechar.setBackground(Color.red);
+		botaoFechar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				controller.fecharJogo();
+			}
+		});
+		setLayout(null);
+		add(botaoFechar);
 	}
 	
 	public void botaoResetarJogo(Graphics g) {
@@ -81,6 +124,7 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 				botaoReset.setVisible(false);
 				botaoSair.setVisible(false);
 				botaoExibirPlacares.setVisible(false);
+				botaoAbrirDiretorio.setVisible(false);
 				repaint();
 			}
 		});
@@ -89,7 +133,7 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 	}
 	
 	public void botaoSairDoJogo(Graphics g) {
-		botaoSair = new JButton("Sair do Jogo");
+		botaoSair = new JButton("Voltar ao Menu");
 		botaoSair.setBounds(15, 90, 160, 25);
 		botaoSair.setFont(new Font("Poppins", Font.BOLD, 16));
 		botaoSair.setForeground(Color.white);
@@ -100,6 +144,7 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 				botaoReset.setVisible(false);
 				botaoSair.setVisible(false);
 				botaoExibirPlacares.setVisible(false);
+				botaoAbrirDiretorio.setVisible(false);
 				repaint();
 				telaInicial(g);
 			}
@@ -108,38 +153,12 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 		add(botaoSair);
 	}
 	
-	public void telaInicial(Graphics g) {
-		botaoJogar = new JButton("Jogar");
-		botaoJogar.setBounds(controller.getAlturaTela() / 2 + 135, controller.getAlturaTela() / 2, 210, 50);
-		botaoJogar.setFont(new Font("Poppins", Font.BOLD, 28));
-		botaoJogar.setForeground(Color.black);
-		botaoJogar.setBackground(Color.green);
-		botaoJogar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				controller.iniciarJogo();
-				botaoJogar.setVisible(false);
-				tituloDoJogo.setVisible(false);
-				repaint();
-			}
-		});
-		setLayout(null);
-		add(botaoJogar);
-		
-		//Título na tela inicial.
-		tituloDoJogo = new JLabel("Jogo da Cobrinha");
-		tituloDoJogo.setBounds(controller.getLarguraTela() / 3, controller.getAlturaTela() / 2 - 100, 500, 55);
-		tituloDoJogo.setFont(new Font("Arial", Font.BOLD, 48));
-		tituloDoJogo.setForeground(Color.green);
-		setLayout(null);
-		add(tituloDoJogo);
-	}
-	
 	public void botaoExibirHistoricoPlacares(Graphics g) {
-		botaoExibirPlacares = new JButton("Exibir Placares");
+		botaoExibirPlacares = new JButton("Exibir Histórico");
 		botaoExibirPlacares.setBounds(15, 130, 160, 25);
 		botaoExibirPlacares.setFont(new Font("Poppins", Font.BOLD, 16));
-		botaoExibirPlacares.setForeground(new Color(37, 90, 255));
-		botaoExibirPlacares.setBackground(new Color(243, 127, 25));
+		botaoExibirPlacares.setForeground(Color.blue);
+		botaoExibirPlacares.setBackground(Color.orange);
 		botaoExibirPlacares.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				controller.exibirPlacar();
@@ -149,14 +168,19 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 		add(botaoExibirPlacares);
 	}
 	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		controller.realizarAcaoDoJogo();
-		repaint();
-		
-		if (e.getSource() == getBotaoExibirPlacares()) {
-			botaoExibirHistoricoPlacares(null);
-		}
+	public void botaoAbrirDiretorio(Graphics g) {
+		botaoAbrirDiretorio = new JButton("Abrir Diretório");
+		botaoAbrirDiretorio.setBounds(15, 170, 160, 25);
+		botaoAbrirDiretorio.setFont(new Font("Poppins", Font.BOLD, 16));
+		botaoAbrirDiretorio.setForeground(Color.DARK_GRAY);
+		botaoAbrirDiretorio.setBackground(Color.cyan);
+		botaoAbrirDiretorio.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				controller.abrirDiretorio();
+			}
+		});
+		setLayout(null);
+		add(botaoAbrirDiretorio);
 	}
 	
 	public JButton getBotaoJogar() {
@@ -199,6 +223,22 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 		this.tituloDoJogo = tituloDoJogo;
 	}
 
+	public JButton getBotaoFechar() {
+		return botaoFechar;
+	}
+
+	public void setBotaoFechar(JButton botaoFechar) {
+		this.botaoFechar = botaoFechar;
+	}
+
+	public JButton getBotaoAbrirDiretorio() {
+		return botaoAbrirDiretorio;
+	}
+
+	public void setBotaoAbrirDiretorio(JButton botaoAbrirDiretorio) {
+		this.botaoAbrirDiretorio = botaoAbrirDiretorio;
+	}
+
 	@Override
 	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
@@ -215,5 +255,15 @@ public class JogoDaCobraView extends JPanel implements ActionListener, KeyListen
 	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		controller.realizarAcaoDoJogo();
+		repaint();
+		
+		if (e.getSource() == getBotaoExibirPlacares()) {
+			botaoExibirHistoricoPlacares(null);
+		}
 	}
 }

@@ -36,9 +36,12 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 	Random random;
 	private int valorComida;
 	
-	private boolean fimDeJogo = false;//Variável qeu controla se o jogo está em andamento ou se o jogo terminou (o jogador perdeu).
+	private boolean fimDeJogo = false;//Variável que controla se o jogo está em andamento ou se o jogo terminou (o jogador perdeu).
 	private boolean inicioDoJogo = false;//Variável que controla o estado inicial do jogo e a transição para o jogo em si.
 	private boolean jogoRodando = false;//Variável que controla se o jogo está em execução ou pausado.
+	
+	private String caminhoPastaLog = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "Jogo da Cobrinha - Arquivos de Pontuação";
+	private String caminhoArquivoLog;
 	
 	public void setView(JogoDaCobraView view) {
 		this.view = view;
@@ -71,6 +74,21 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 		comida.y = random.nextInt(alturaTela / tamanhoBloco);
 	}
 	
+	public void iniciarJogo() {
+		cabecaCobra = new CabecaCobra(10, 10);
+		corpoCobra.clear();
+		valorComida = 0;
+		direcaoX = 1;
+		direcaoY = 0;
+		fimDeJogo = false;
+		posicaoComida();
+		inicioDoJogo = true;
+		jogoRodando = true;
+		loopJogo.start();
+		
+		executarLog();
+	}
+	
 	public void resetarJogo() {
 		cabecaCobra = new CabecaCobra(10, 10);
 		corpoCobra.clear();
@@ -87,17 +105,16 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 		jogoRodando = false;
 	}
 	
-	public void iniciarJogo() {
-		cabecaCobra = new CabecaCobra(10, 10);
-		corpoCobra.clear();
-		valorComida = 0;
-		direcaoX = 1;
-		direcaoY = 0;
-		fimDeJogo = false;
-		posicaoComida();
-		inicioDoJogo = true;
-		jogoRodando = true;
-		loopJogo.start();
+	public void fecharJogo() {
+		System.exit(0);
+	}
+	
+	public void abrirDiretorio() {
+		 try {
+			 Desktop.getDesktop().open(new File(caminhoPastaLog));
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
 	}
 	
 	public void mover() {
@@ -173,30 +190,30 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 	}
 
 	@Override
-	public void exibirPlacar() {
+	public void executarLog() {
 		try {
-			String caminhoDaPasta = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "Jogo da Cobrinha - Histórico de Placares";
-			File pasta = new File(caminhoDaPasta);
+			File pastaLog = new File(caminhoPastaLog);
 			
-			System.out.println("Diretório: " + caminhoDaPasta);
+			if (!pastaLog.exists()) {
+				File pastaPai = pastaLog.getParentFile();
+				if (pastaPai != null && !pastaPai.exists()) {
+					pastaPai.mkdirs();
+				}
+				pastaLog.mkdirs();
+			} 
 			
-			File[] arquivos = pasta.listFiles();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss_SSS");//Objeto que formata a data e hora e o atribui a variável `dateFormat`.
+			String dataHoraAtual = dateFormat.format(new Date());//Obtém a data e hora atual formatada.
 			
-			if (arquivos == null || arquivos.length == 0) {
-				JOptionPane.showMessageDialog(null, "Nenhum arquivo encontrado nesta pasta: " + caminhoDaPasta);
-				return;
-			}
+			String nomeArquivo = "Log_" + dataHoraAtual + ".txt";
+			caminhoArquivoLog = caminhoPastaLog + File.separator + nomeArquivo;
 			
-			String[] arquivosNomes = new String[arquivos.length];
-			for (int i = 0; i < arquivos.length; i++) {
-				arquivosNomes[i] = arquivos[i].getName();
-			}
+			BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoLog));
+            writer.write("---- Jogo da Cobrinha - Histórico de Pontuação ----");
+            writer.newLine();
+            writer.newLine();
+            writer.close();
 			
-			JList<String> arquivosList = new JList<>(arquivosNomes);
-			
-			JScrollPane scrollPane = new JScrollPane(arquivosList);
-			
-			JOptionPane.showMessageDialog(null, scrollPane, "Histórico de Placares", JOptionPane.PLAIN_MESSAGE);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -204,30 +221,41 @@ public class JogoDaCobraController implements ActionListener, KeyListener, JogoD
 	
 	@Override
 	public void salvarPlacar(int placar) {
-		try {
-			String caminhoDaPasta = System.getProperty("user.home") + File.separator + "Desktop" + File.separator + "Jogo da Cobrinha - Histórico de Placares";
-			File pasta = new File(caminhoDaPasta);
-			
-			if (!pasta.exists()) {
-				File pastaPai = pasta.getParentFile();
-				if (pastaPai != null && !pastaPai.exists()) {
-					pastaPai.mkdirs();
-				}
-				pasta.mkdirs();
-			}
-			
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss_SSS");//Objeto que formata a data e hora e o atribui a variável `dateFormat`.
-			String dataHoraAtual = dateFormat.format(new Date());//Obtém a data e hora atual formatada.
-			
-			String arquivoDaPasta = caminhoDaPasta + "/Pontuação_" + dataHoraAtual + ".txt";//Nomeia o arquivo com o nome formatado.
-			
-			try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivoDaPasta))) {//Cria um objeto para escrever o nome do arquivo.
-				writer.write("Pontuação: " + placar + " pontos.");
-				writer.newLine();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(caminhoArquivoLog, true))) {
+	            writer.write(placar + " pontos.");
+	            writer.newLine();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	}
+	
+	@Override
+	public void exibirPlacar() {
+	    File pastaLog = new File(caminhoPastaLog);
+
+	    File[] arquivos = pastaLog.listFiles();
+	    if (arquivos == null || arquivos.length == 0) {
+	        JOptionPane.showMessageDialog(null, "Nenhum arquivo encontrado nesta pasta: " + caminhoPastaLog);
+	        return;
+	    }
+
+	    File ultimoArquivo = arquivos[arquivos.length - 1];
+	    String conteudoUltimoArquivo = obterConteudoArquivo(ultimoArquivo);
+
+	    JOptionPane.showMessageDialog(null, conteudoUltimoArquivo, "Registro de Placares", JOptionPane.PLAIN_MESSAGE);
+	}
+
+	private String obterConteudoArquivo(File arquivo) {
+	    StringBuilder conteudo = new StringBuilder();
+	    try (BufferedReader reader = new BufferedReader(new FileReader(arquivo))) {
+	        String linha;
+	        while ((linha = reader.readLine()) != null) {
+	            conteudo.append(linha).append("\n");
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	    return conteudo.toString();
 	}
 
 	@Override
